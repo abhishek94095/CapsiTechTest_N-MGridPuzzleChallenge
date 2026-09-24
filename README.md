@@ -1,1 +1,1 @@
-# CapsiTechTest_N-MGridPuzzleChallenge-
+# CapsiTechTest_N-MGridPuzzleChallenge
