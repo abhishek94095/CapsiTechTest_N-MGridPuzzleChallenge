@@ -38,6 +38,11 @@ namespace AV.Framework.Core.Grid
             return true;
         }
 
+        internal void SetCell(GridCell cell)
+        {
+            cells[GetIndex(cell.Position)] = cell;
+        }
+
         private int GetIndex(GridPosition position) => position.Y * size.Width + position.X;
     }
 }

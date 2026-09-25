@@ -4,6 +4,7 @@ namespace AV.Framework.Core.Grid
     {
         Normal,
         Stone,
+        Start,
         Goal
     }
 }
