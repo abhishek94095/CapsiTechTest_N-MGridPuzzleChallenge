@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7871e8797f6f0264c9d333dc86863874, type: 3}
+  m_Name: BoardVisualConfig
+  m_EditorClassIdentifier: Application::AV.Framework.GameData.BoardVisualConfig
+  normalCellPrefab: {fileID: 5054427198089209996, guid: 399397189c723c44897a2bd23f4a3d60, type: 3}
+  stoneCellPrefab: {fileID: 5559642103231814489, guid: 2cd8c2af1f4fa22488d1e4f89d0cbb6b, type: 3}
+  startCellPrefab: {fileID: 6799486875772767304, guid: 070a075a29a148a44b16a7c6ad49be95, type: 3}
+  goalCellPrefab: {fileID: 4180685112389024464, guid: 8daa4e103e410c747bd108fc3e73b9b9, type: 3}
+  playerPrefab: {fileID: 8458838364948548064, guid: 48192a7455f0c8c4d988b3540e004c2a, type: 3}
+  obstaclePrefab: {fileID: 5473656263988867821, guid: 954f043d91e573049bb22c976f74fe4a, type: 3}

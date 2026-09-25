@@ -374,6 +374,8 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   environmentSettings: {fileID: 11400000, guid: 0f8d62fc26a490145b679502c7970a13, type: 2}
+  boardData: {fileID: 11400000, guid: 46b8efb759ee2034c9107640649f8442, type: 2}
+  boardVisualConfig: {fileID: 11400000, guid: 0484068b46d155a4880aba4f6e4055b6, type: 2}
 --- !u!4 &1051690897
 Transform:
   m_ObjectHideFlags: 0

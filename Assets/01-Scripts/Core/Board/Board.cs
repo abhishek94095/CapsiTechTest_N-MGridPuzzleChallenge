@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AV.Framework.Core.Grid;
 
 namespace AV.Framework.Core.Board
@@ -8,6 +9,7 @@ namespace AV.Framework.Core.Board
         public Grid.Grid Grid { get; }
         private readonly Piece[] pieces;
         public int PieceCount => pieces.Length;
+        public IReadOnlyList<Piece> Pieces => pieces;
 
         public Board(Grid.Grid grid, Piece[] pieces)
         {
@@ -31,5 +33,6 @@ namespace AV.Framework.Core.Board
             piece = default;
             return false;
         }
+
     }
 }

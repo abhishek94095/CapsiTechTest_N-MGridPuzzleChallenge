@@ -21,6 +21,15 @@ namespace AV.Framework.Core.Grid
             }
         }
 
+        public Grid(GridSize gridSize, GridCell[] gridCells)
+        {
+            if (gridCells == null) throw new System.ArgumentNullException(nameof(gridCells));
+            if (gridCells.Length != gridSize.CellCount) throw new System.ArgumentException("Grid cell count does not match grid size.", nameof(gridCells));
+
+            size = gridSize;
+            cells = gridCells;
+        }
+
         public bool IsValidPosition(GridPosition position)
         {
             return position.X >= 0 && position.X < size.Width && position.Y >= 0 && position.Y < size.Height;
