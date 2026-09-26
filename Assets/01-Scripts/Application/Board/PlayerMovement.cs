@@ -1,5 +1,6 @@
 using System;
 using AV.Framework.Core.Board;
+using AV.Framework.Core.Events;
 using AV.Framework.Core.Grid;
 using MessagePipe;
 using VContainer.Unity;
@@ -14,10 +15,15 @@ namespace AV.Framework.Application
         private readonly GameSession gameSession;
         private readonly GameFlow gameFlow;
         private readonly ISubscriber<UndoRequestedEvent> undoSubscriber;
+        private readonly ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber;
+        private readonly ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber;
         private IDisposable undoSubscription;
+        private IDisposable powerUpStartedSubscription;
+        private IDisposable powerUpEndedSubscription;
         private readonly IPublisher<GoalReachedEvent> goalPublisher;
         private readonly ISubscriber<GridDirection> subscriber;
         private IDisposable subscription;
+        private bool isPowerUpModeActive;
 
         public PlayerMovement(
             BoardInitializer boardInitializer,
@@ -26,6 +32,8 @@ namespace AV.Framework.Application
             GameSession gameSession,
             GameFlow gameFlow,
             ISubscriber<UndoRequestedEvent> undoSubscriber,
+            ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber,
+            ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber,
             IPublisher<GoalReachedEvent> goalPublisher,
             ISubscriber<GridDirection> subscriber)
         {
@@ -35,6 +43,8 @@ namespace AV.Framework.Application
             this.gameSession = gameSession ?? throw new ArgumentNullException(nameof(gameSession));
             this.gameFlow = gameFlow ?? throw new ArgumentNullException(nameof(gameFlow));
             this.undoSubscriber = undoSubscriber ?? throw new ArgumentNullException(nameof(undoSubscriber));
+            this.powerUpStartedSubscriber = powerUpStartedSubscriber ?? throw new ArgumentNullException(nameof(powerUpStartedSubscriber));
+            this.powerUpEndedSubscriber = powerUpEndedSubscriber ?? throw new ArgumentNullException(nameof(powerUpEndedSubscriber));
             this.goalPublisher = goalPublisher ?? throw new ArgumentNullException(nameof(goalPublisher));
             this.subscriber = subscriber ?? throw new ArgumentNullException(nameof(subscriber));
         }
@@ -43,11 +53,14 @@ namespace AV.Framework.Application
         {
             subscription = subscriber.Subscribe(OnDirectionReceived);
             undoSubscription = undoSubscriber.Subscribe(OnUndoRequested);
+            powerUpStartedSubscription = powerUpStartedSubscriber.Subscribe(OnPowerUpModeStarted);
+            powerUpEndedSubscription = powerUpEndedSubscriber.Subscribe(OnPowerUpModeEnded);
         }
 
         private void OnDirectionReceived(GridDirection direction)
         {
             if (gameFlow.State != GameFlowState.Playing) return;
+            if (isPowerUpModeActive) return;
 
             UnityEngine.Debug.Log($"Movement received: {direction}");
 
@@ -88,15 +101,16 @@ namespace AV.Framework.Application
                 }
             }
 
-            if (killedPieceId != -1)
+            if (killedPieceId >= 0)
             {
-                boardPresenter.RemovePiece(killedPieceId);
+                boardPresenter.HidePiece(killedPieceId);
             }
         }
 
-        private void OnUndoRequested(UndoRequestedEvent _)
+        private void OnUndoRequested(UndoRequestedEvent undoRequestedEvent)
         {
             if (gameFlow.State != GameFlowState.Playing) return;
+            if (isPowerUpModeActive) return;
 
             Board board = boardInitializer.CurrentBoard;
             if (board == null) return;
@@ -121,10 +135,22 @@ namespace AV.Framework.Application
             }
         }
 
+        private void OnPowerUpModeStarted(PowerUpModeStartedEvent powerUpModeStartedEvent)
+        {
+            isPowerUpModeActive = true;
+        }
+
+        private void OnPowerUpModeEnded(PowerUpModeEndedEvent powerUpModeEndedEvent)
+        {
+            isPowerUpModeActive = false;
+        }
+
         public void Dispose()
         {
             subscription?.Dispose();
             undoSubscription?.Dispose();
+            powerUpStartedSubscription?.Dispose();
+            powerUpEndedSubscription?.Dispose();
         }
     }
 }

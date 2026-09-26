@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AV.Framework.Core.Board;
+using AV.Framework.Core.Events;
 using AV.Framework.Core.Grid;
 using Cysharp.Threading.Tasks;
 using MessagePipe;
@@ -16,22 +17,34 @@ namespace AV.Framework.Application
 
         private readonly BoardInitializer boardInitializer;
         private readonly BoardPresenter boardPresenter;
+        private readonly ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber;
+        private readonly ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber;
         private readonly IPublisher<PlayerDeathEvent> deathPublisher;
         private readonly List<UniTask> movementTasks = new List<UniTask>();
+        private IDisposable powerUpStartedSubscription;
+        private IDisposable powerUpEndedSubscription;
         private bool isRunning;
+        private bool isPowerUpModeActive;
 
         public MovingPieceController(
             BoardInitializer boardInitializer,
             BoardPresenter boardPresenter,
+            ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber,
+            ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber,
             IPublisher<PlayerDeathEvent> deathPublisher)
         {
             this.boardInitializer = boardInitializer ?? throw new ArgumentNullException(nameof(boardInitializer));
             this.boardPresenter = boardPresenter ?? throw new ArgumentNullException(nameof(boardPresenter));
+            this.powerUpStartedSubscriber = powerUpStartedSubscriber ?? throw new ArgumentNullException(nameof(powerUpStartedSubscriber));
+            this.powerUpEndedSubscriber = powerUpEndedSubscriber ?? throw new ArgumentNullException(nameof(powerUpEndedSubscriber));
             this.deathPublisher = deathPublisher ?? throw new ArgumentNullException(nameof(deathPublisher));
         }
 
         public void Start()
         {
+            powerUpStartedSubscription = powerUpStartedSubscriber.Subscribe(OnPowerUpModeStarted);
+            powerUpEndedSubscription = powerUpEndedSubscriber.Subscribe(OnPowerUpModeEnded);
+
             isRunning = true;
             Board board = boardInitializer.CurrentBoard;
             if (board == null) return;
@@ -49,6 +62,8 @@ namespace AV.Framework.Application
         {
             isRunning = false;
             movementTasks.Clear();
+            powerUpStartedSubscription?.Dispose();
+            powerUpEndedSubscription?.Dispose();
         }
 
         private async UniTask MovePieceAsync(int pieceId)
@@ -63,6 +78,7 @@ namespace AV.Framework.Application
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(MoveInterval));
                 if (!isRunning) return;
+                if (isPowerUpModeActive) continue;
 
                 if (!board.TryGetPiece(pieceId, out piece)) return;
                 if (!piece.IsActive) continue;
@@ -81,6 +97,16 @@ namespace AV.Framework.Application
 
                 boardPresenter.UpdatePiecePosition(pieceId, targetPosition);
             }
+        }
+
+        private void OnPowerUpModeStarted(PowerUpModeStartedEvent powerUpModeStartedEvent)
+        {
+            isPowerUpModeActive = true;
+        }
+
+        private void OnPowerUpModeEnded(PowerUpModeEndedEvent powerUpModeEndedEvent)
+        {
+            isPowerUpModeActive = false;
         }
 
         private static int GetPathIndex(Piece piece)

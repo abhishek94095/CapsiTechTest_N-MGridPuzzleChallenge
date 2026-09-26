@@ -77,6 +77,38 @@ namespace AV.Framework.Core.Board
             return true;
         }
 
+        public bool TryHammerPiece(GridPosition targetPosition, out int hammeredPieceId)
+        {
+            hammeredPieceId = -1;
+
+            if (!Grid.IsValidPosition(targetPosition)) return false;
+            if (!Grid.TryGetCell(targetPosition, out GridCell targetCell)) return false;
+            if (targetCell.IsBlocked) return false;
+            if (targetCell.Occupant != CellOccupant.Obstacle) return false;
+
+            if (!TryGetPieceAtPosition(targetPosition, out Piece obstacle)) return false;
+            if (!obstacle.IsActive) return false;
+
+            if (!TryGetPiece(-1, out Piece player) || !player.IsActive) return false;
+            if (Math.Abs(targetPosition.X - player.Position.X) + Math.Abs(targetPosition.Y - player.Position.Y) > 1) return false;
+
+            if (!Grid.TryRemoveOccupant(targetPosition, CellOccupant.Obstacle)) return false;
+
+            hammeredPieceId = obstacle.Id;
+            pieces[GetPieceIndex(obstacle.Id)] = obstacle.WithActiveState(false);
+            return true;
+        }
+
+        public bool TryRocketWall(GridPosition targetPosition)
+        {
+            if (!Grid.IsValidPosition(targetPosition)) return false;
+            if (!Grid.TryGetCell(targetPosition, out GridCell targetCell)) return false;
+            if (targetCell.CellType != CellType.Stone) return false;
+            if (targetCell.IsOccupied) return false;
+
+            return Grid.TryChangeCellType(targetPosition, CellType.Normal);
+        }
+
         public bool TryUndoMove(Move move)
         {
             if (!TryGetPiece(-1, out Piece player) || !player.IsActive) return false;

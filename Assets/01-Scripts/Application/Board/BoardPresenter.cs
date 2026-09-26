@@ -11,6 +11,7 @@ namespace AV.Framework.Application
     {
         private readonly BoardVisualConfig visualConfig;
         private readonly Dictionary<int, GameObject> pieceObjects = new Dictionary<int, GameObject>();
+        private readonly Dictionary<GridPosition, GameObject> cellObjects = new Dictionary<GridPosition, GameObject>();
         private Transform boardRoot;
         private int boardWidth;
         private int boardHeight;
@@ -33,6 +34,25 @@ namespace AV.Framework.Application
             PresentPieces(board);
         }
 
+        public bool TryGetGridPosition(Vector2 screenPosition, Camera gameCamera, out GridPosition position)
+        {
+            if (gameCamera == null)
+            {
+                position = default;
+                return false;
+            }
+
+            Vector3 worldPosition = gameCamera.ScreenToWorldPoint(new Vector3(
+                screenPosition.x,
+                screenPosition.y,
+                -gameCamera.transform.position.z));
+            int x = Mathf.FloorToInt(worldPosition.x + boardWidth * 0.5f);
+            int y = Mathf.FloorToInt(worldPosition.y + boardHeight * 0.5f);
+
+            position = new GridPosition(x, y);
+            return x >= 0 && x < boardWidth && y >= 0 && y < boardHeight;
+        }
+
         private void PresentCells(Core.Grid.Grid grid)
         {
             for (int y = 0; y < boardHeight; y++)
@@ -45,7 +65,8 @@ namespace AV.Framework.Application
                     GameObject prefab = GetCellPrefab(cell.CellType);
                     if (prefab == null) throw new InvalidOperationException($"No prefab configured for cell type {cell.CellType}.");
 
-                    Instantiate(prefab, position, $"Cell_{x}_{y}");
+                    GameObject cellObject = Instantiate(prefab, position, $"Cell_{x}_{y}");
+                    cellObjects[position] = cellObject;
                 }
             }
         }
@@ -86,18 +107,31 @@ namespace AV.Framework.Application
             pieceObject.transform.position = GetWorldPosition(position);
         }
 
-        public void RemovePiece(int pieceId)
+        public void HidePiece(int pieceId)
         {
             if (!pieceObjects.TryGetValue(pieceId, out GameObject pieceObject)) return;
 
-            UnityEngine.Object.Destroy(pieceObject);
-            pieceObjects.Remove(pieceId);
+            pieceObject.SetActive(false);
+        }
+
+        public void HidePieceAtPosition(GridPosition position)
+        {
+            Vector3 targetPosition = GetWorldPosition(position);
+            foreach (KeyValuePair<int, GameObject> entry in pieceObjects)
+            {
+                if (!entry.Value.activeSelf) continue;
+                if (Vector3.Distance(entry.Value.transform.position, targetPosition) > 0.01f) continue;
+
+                entry.Value.SetActive(false);
+                return;
+            }
         }
 
         public void RenderPiece(Piece piece)
         {
             if (pieceObjects.ContainsKey(piece.Id))
             {
+                pieceObjects[piece.Id].SetActive(piece.IsActive);
                 UpdatePiecePosition(piece.Id, piece.Position);
                 return;
             }
@@ -106,6 +140,17 @@ namespace AV.Framework.Application
             if (prefab == null) throw new InvalidOperationException($"No prefab configured for piece type {piece.Type}.");
 
             pieceObjects[piece.Id] = Instantiate(prefab, piece.Position, piece.Type.ToString());
+        }
+
+        public void UpdateCellVisual(GridPosition position, CellType cellType)
+        {
+            if (!cellObjects.TryGetValue(position, out GameObject existingCell)) return;
+
+            GameObject prefab = GetCellPrefab(cellType);
+            if (prefab == null) throw new InvalidOperationException($"No prefab configured for cell type {cellType}.");
+
+            existingCell.SetActive(false);
+            cellObjects[position] = Instantiate(prefab, position, $"Cell_{position.X}_{position.Y}_Visual");
         }
 
         private Vector3 GetWorldPosition(GridPosition position)
@@ -121,6 +166,7 @@ namespace AV.Framework.Application
 
             boardRoot = null;
             pieceObjects.Clear();
+            cellObjects.Clear();
         }
     }
 }

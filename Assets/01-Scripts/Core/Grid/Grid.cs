@@ -59,6 +59,30 @@ namespace AV.Framework.Core.Grid
             return true;
         }
 
+        public bool TryRemoveOccupant(GridPosition position, CellOccupant occupant)
+        {
+            if (!IsValidPosition(position)) return false;
+
+            int index = GetIndex(position);
+            GridCell cell = cells[index];
+            if (cell.Occupant != occupant) return false;
+
+            cells[index] = cell.WithOccupant(CellOccupant.None);
+            return true;
+        }
+
+        public bool TryChangeCellType(GridPosition position, CellType cellType)
+        {
+            if (!IsValidPosition(position)) return false;
+
+            int index = GetIndex(position);
+            GridCell cell = cells[index];
+            if (cell.IsOccupied) return false;
+
+            cells[index] = cell.WithCellType(cellType);
+            return true;
+        }
+
         public bool TryMoveOccupant(GridPosition from, GridPosition to, CellOccupant occupant)
         {
             if (!IsValidPosition(from) || !IsValidPosition(to)) return false;

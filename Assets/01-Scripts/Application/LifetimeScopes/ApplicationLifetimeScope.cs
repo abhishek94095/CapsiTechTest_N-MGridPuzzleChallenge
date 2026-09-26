@@ -10,12 +10,14 @@ public sealed class ApplicationLifetimeScope : LifetimeScope
     [SerializeField] private EnvironmentSettingsSO environmentSettings;
     [SerializeField] private BoardData boardData;
     [SerializeField] private BoardVisualConfig boardVisualConfig;
+    [SerializeField] private Camera gameCamera;
 
     protected override void Configure(IContainerBuilder builder)
     {
         builder.RegisterInstance(environmentSettings);
         builder.RegisterInstance(boardData);
         builder.RegisterInstance(boardVisualConfig);
+        builder.RegisterInstance(gameCamera);
 
         if (environmentSettings != null && environmentSettings.SRDebuggerEnabled)
         {
