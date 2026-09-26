@@ -94,6 +94,20 @@ namespace AV.Framework.Application
             pieceObjects.Remove(pieceId);
         }
 
+        public void RenderPiece(Piece piece)
+        {
+            if (pieceObjects.ContainsKey(piece.Id))
+            {
+                UpdatePiecePosition(piece.Id, piece.Position);
+                return;
+            }
+
+            GameObject prefab = piece.Type == PieceType.Player ? visualConfig.PlayerPrefab : visualConfig.ObstaclePrefab;
+            if (prefab == null) throw new InvalidOperationException($"No prefab configured for piece type {piece.Type}.");
+
+            pieceObjects[piece.Id] = Instantiate(prefab, piece.Position, piece.Type.ToString());
+        }
+
         private Vector3 GetWorldPosition(GridPosition position)
         {
             float x = position.X - (boardWidth - 1) * 0.5f;

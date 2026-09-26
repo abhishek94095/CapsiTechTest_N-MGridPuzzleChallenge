@@ -10,11 +10,13 @@ namespace AV.Framework.GameData
     {
         [SerializeField] private int width = 5;
         [SerializeField] private int height = 8;
+        [SerializeField] private int moveLimit = 20;
         [SerializeField] private CellType[] cells;
         [SerializeField] private PieceData[] pieces;
 
         public int Width => width;
         public int Height => height;
+        public int MoveLimit => moveLimit;
         public CellType[] Cells => cells;
         public PieceData[] Pieces => pieces;
 

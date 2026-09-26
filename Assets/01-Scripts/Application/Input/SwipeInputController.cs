@@ -1,4 +1,5 @@
 using System;
+using AV.Framework.Core.Board;
 using AV.Framework.Core.Grid;
 using MessagePipe;
 using UnityEngine;
@@ -12,16 +13,26 @@ namespace AV.Framework.Application
         private const float SwipeThreshold = 50f;
 
         private readonly IPublisher<GridDirection> publisher;
+        private readonly IPublisher<UndoRequestedEvent> undoPublisher;
         private bool isPointerDown;
         private Vector2 pointerDownPosition;
 
-        public SwipeInputController(IPublisher<GridDirection> publisher)
+        public SwipeInputController(
+            IPublisher<GridDirection> publisher,
+            IPublisher<UndoRequestedEvent> undoPublisher)
         {
             this.publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
+            this.undoPublisher = undoPublisher ?? throw new ArgumentNullException(nameof(undoPublisher));
         }
 
         public void Tick()
         {
+            if (Keyboard.current != null && Keyboard.current.zKey.wasPressedThisFrame)
+            {
+                undoPublisher.Publish(new UndoRequestedEvent());
+                return;
+            }
+
             if (TryGetKeyboardDirection(out GridDirection keyboardDirection))
             {
                 Debug.Log($"Input detected: {keyboardDirection} (Keyboard)");

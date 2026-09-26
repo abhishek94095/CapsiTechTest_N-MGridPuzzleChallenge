@@ -65,7 +65,7 @@ namespace AV.Framework.Application
                 if (!isRunning) return;
 
                 if (!board.TryGetPiece(pieceId, out piece)) return;
-                if (!piece.IsActive) return;
+                if (!piece.IsActive) continue;
 
                 pathIndex = (pathIndex + 1) % piece.Path.Length;
                 GridPosition targetPosition = piece.Path[pathIndex];

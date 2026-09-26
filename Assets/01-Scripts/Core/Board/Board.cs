@@ -77,6 +77,26 @@ namespace AV.Framework.Core.Board
             return true;
         }
 
+        public bool TryUndoMove(Move move)
+        {
+            if (!TryGetPiece(-1, out Piece player) || !player.IsActive) return false;
+            if (!Grid.TryMoveOccupant(player.Position, move.Position, CellOccupant.Player)) return false;
+
+            if (move.KilledPieceId >= 0)
+            {
+                if (!TryGetPiece(move.KilledPieceId, out Piece killedPiece)) return false;
+                if (killedPiece.IsActive) return false;
+                if (!Grid.TryRestoreOccupant(player.Position, CellOccupant.Obstacle)) return false;
+
+                pieces[GetPieceIndex(move.KilledPieceId)] = killedPiece
+                    .WithPosition(player.Position)
+                    .WithActiveState(true);
+            }
+
+            pieces[GetPieceIndex(-1)] = player.WithPosition(move.Position);
+            return true;
+        }
+
         private static GridPosition GetTargetPosition(GridPosition position, GridDirection direction)
         {
             if (direction == GridDirection.Up) return new GridPosition(position.X, position.Y + 1);

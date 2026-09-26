@@ -10,10 +10,14 @@ namespace AV.Framework.Application.Installers
         {
             builder.Register<BoardFactory>(Lifetime.Singleton);
             builder.Register<BoardPresenter>(Lifetime.Singleton);
+            builder.Register<MoveHistory>(Lifetime.Singleton);
+            builder.Register<GameFlow>(Lifetime.Singleton);
+            builder.Register<GameSession>(Lifetime.Singleton);
             builder.RegisterEntryPoint<SwipeInputController>();
             builder.RegisterEntryPoint<BoardInitializer>().AsSelf();
             builder.RegisterEntryPoint<PlayerMovement>();
             builder.RegisterEntryPoint<MovingPieceController>();
+            builder.RegisterEntryPoint<GameFlowEntryPoint>();
             builder.RegisterMessagePipe();
         }
     }

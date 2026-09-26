@@ -47,6 +47,18 @@ namespace AV.Framework.Core.Grid
             return true;
         }
 
+        public bool TryRestoreOccupant(GridPosition position, CellOccupant occupant)
+        {
+            if (!IsValidPosition(position)) return false;
+
+            int index = GetIndex(position);
+            GridCell cell = cells[index];
+            if (cell.IsBlocked || cell.IsOccupied) return false;
+
+            cells[index] = cell.WithOccupant(occupant);
+            return true;
+        }
+
         public bool TryMoveOccupant(GridPosition from, GridPosition to, CellOccupant occupant)
         {
             if (!IsValidPosition(from) || !IsValidPosition(to)) return false;
