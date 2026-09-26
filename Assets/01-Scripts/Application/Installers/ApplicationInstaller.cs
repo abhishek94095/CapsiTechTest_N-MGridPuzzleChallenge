@@ -10,7 +10,10 @@ namespace AV.Framework.Application.Installers
         {
             builder.Register<BoardFactory>(Lifetime.Singleton);
             builder.Register<BoardPresenter>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<BoardInitializer>();
+            builder.RegisterEntryPoint<SwipeInputController>();
+            builder.RegisterEntryPoint<BoardInitializer>().AsSelf();
+            builder.RegisterEntryPoint<PlayerMovement>();
+            builder.RegisterEntryPoint<MovingPieceController>();
             builder.RegisterMessagePipe();
         }
     }

@@ -47,6 +47,39 @@ namespace AV.Framework.Core.Grid
             return true;
         }
 
+        public bool TryMoveOccupant(GridPosition from, GridPosition to, CellOccupant occupant)
+        {
+            if (!IsValidPosition(from) || !IsValidPosition(to)) return false;
+            if (from == to) return false;
+
+            int fromIndex = GetIndex(from);
+            int toIndex = GetIndex(to);
+
+            if (cells[fromIndex].Occupant != occupant) return false;
+            if (cells[toIndex].IsBlocked || cells[toIndex].IsOccupied) return false;
+
+            cells[fromIndex] = cells[fromIndex].WithOccupant(CellOccupant.None);
+            cells[toIndex] = cells[toIndex].WithOccupant(occupant);
+            return true;
+        }
+
+        public bool TryMoveOccupant(GridPosition from, GridPosition to, CellOccupant occupant, CellOccupant replaceableOccupant)
+        {
+            if (!IsValidPosition(from) || !IsValidPosition(to)) return false;
+            if (from == to) return false;
+
+            int fromIndex = GetIndex(from);
+            int toIndex = GetIndex(to);
+
+            if (cells[fromIndex].Occupant != occupant) return false;
+            if (cells[toIndex].IsBlocked) return false;
+            if (cells[toIndex].IsOccupied && cells[toIndex].Occupant != replaceableOccupant) return false;
+
+            cells[fromIndex] = cells[fromIndex].WithOccupant(CellOccupant.None);
+            cells[toIndex] = cells[toIndex].WithOccupant(occupant);
+            return true;
+        }
+
         internal void SetCell(GridCell cell)
         {
             cells[GetIndex(cell.Position)] = cell;

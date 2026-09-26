@@ -80,6 +80,20 @@ namespace AV.Framework.Application
             return instance;
         }
 
+        public void UpdatePiecePosition(int pieceId, GridPosition position)
+        {
+            if (!pieceObjects.TryGetValue(pieceId, out GameObject pieceObject)) return;
+            pieceObject.transform.position = GetWorldPosition(position);
+        }
+
+        public void RemovePiece(int pieceId)
+        {
+            if (!pieceObjects.TryGetValue(pieceId, out GameObject pieceObject)) return;
+
+            UnityEngine.Object.Destroy(pieceObject);
+            pieceObjects.Remove(pieceId);
+        }
+
         private Vector3 GetWorldPosition(GridPosition position)
         {
             float x = position.X - (boardWidth - 1) * 0.5f;
