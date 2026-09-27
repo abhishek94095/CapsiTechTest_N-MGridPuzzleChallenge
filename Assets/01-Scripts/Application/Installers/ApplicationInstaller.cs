@@ -1,6 +1,7 @@
 namespace AV.Framework.Application.Installers
 {
     using AV.Framework.Application;
+    using AV.Framework.Application.Audio;
     using AV.Framework.Core.Board;
     using AV.Framework.Core.Events;
     using MessagePipe;
@@ -23,6 +24,7 @@ namespace AV.Framework.Application.Installers
             builder.RegisterEntryPoint<PlayerMovement>();
             builder.RegisterEntryPoint<MovingPieceController>();
             builder.RegisterEntryPoint<PowerUpController>().AsSelf();
+            builder.RegisterEntryPoint<GameAudioController>();
             builder.RegisterEntryPoint<GameFlowEntryPoint>();
             builder.RegisterMessagePipe();
 

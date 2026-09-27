@@ -17,6 +17,7 @@ namespace AV.Framework.Application
 
         private readonly BoardInitializer boardInitializer;
         private readonly BoardPresenter boardPresenter;
+        private readonly GameFlow gameFlow;
         private readonly ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber;
         private readonly ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber;
         private readonly IPublisher<PlayerDeathEvent> deathPublisher;
@@ -29,12 +30,14 @@ namespace AV.Framework.Application
         public MovingPieceController(
             BoardInitializer boardInitializer,
             BoardPresenter boardPresenter,
+            GameFlow gameFlow,
             ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber,
             ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber,
             IPublisher<PlayerDeathEvent> deathPublisher)
         {
             this.boardInitializer = boardInitializer ?? throw new ArgumentNullException(nameof(boardInitializer));
             this.boardPresenter = boardPresenter ?? throw new ArgumentNullException(nameof(boardPresenter));
+            this.gameFlow = gameFlow ?? throw new ArgumentNullException(nameof(gameFlow));
             this.powerUpStartedSubscriber = powerUpStartedSubscriber ?? throw new ArgumentNullException(nameof(powerUpStartedSubscriber));
             this.powerUpEndedSubscriber = powerUpEndedSubscriber ?? throw new ArgumentNullException(nameof(powerUpEndedSubscriber));
             this.deathPublisher = deathPublisher ?? throw new ArgumentNullException(nameof(deathPublisher));
@@ -78,6 +81,7 @@ namespace AV.Framework.Application
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(MoveInterval));
                 if (!isRunning) return;
+                if (gameFlow.State != GameFlowState.Playing) break;
                 if (isPowerUpModeActive) continue;
 
                 if (!board.TryGetPiece(pieceId, out piece)) return;

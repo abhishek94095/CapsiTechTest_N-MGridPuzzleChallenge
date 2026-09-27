@@ -21,6 +21,9 @@ namespace AV.Framework.Application
         private IDisposable powerUpStartedSubscription;
         private IDisposable powerUpEndedSubscription;
         private readonly IPublisher<GoalReachedEvent> goalPublisher;
+        private readonly IPublisher<PlayerMovedEvent> playerMovedPublisher;
+        private readonly IPublisher<MoveUndoneEvent> moveUndonePublisher;
+        private readonly IPublisher<ObstacleCapturedEvent> obstacleCapturedPublisher;
         private readonly ISubscriber<GridDirection> subscriber;
         private IDisposable subscription;
         private bool isPowerUpModeActive;
@@ -35,6 +38,9 @@ namespace AV.Framework.Application
             ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber,
             ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber,
             IPublisher<GoalReachedEvent> goalPublisher,
+            IPublisher<PlayerMovedEvent> playerMovedPublisher,
+            IPublisher<MoveUndoneEvent> moveUndonePublisher,
+            IPublisher<ObstacleCapturedEvent> obstacleCapturedPublisher,
             ISubscriber<GridDirection> subscriber)
         {
             this.boardInitializer = boardInitializer ?? throw new ArgumentNullException(nameof(boardInitializer));
@@ -46,6 +52,9 @@ namespace AV.Framework.Application
             this.powerUpStartedSubscriber = powerUpStartedSubscriber ?? throw new ArgumentNullException(nameof(powerUpStartedSubscriber));
             this.powerUpEndedSubscriber = powerUpEndedSubscriber ?? throw new ArgumentNullException(nameof(powerUpEndedSubscriber));
             this.goalPublisher = goalPublisher ?? throw new ArgumentNullException(nameof(goalPublisher));
+            this.playerMovedPublisher = playerMovedPublisher ?? throw new ArgumentNullException(nameof(playerMovedPublisher));
+            this.moveUndonePublisher = moveUndonePublisher ?? throw new ArgumentNullException(nameof(moveUndonePublisher));
+            this.obstacleCapturedPublisher = obstacleCapturedPublisher ?? throw new ArgumentNullException(nameof(obstacleCapturedPublisher));
             this.subscriber = subscriber ?? throw new ArgumentNullException(nameof(subscriber));
         }
 
@@ -93,6 +102,7 @@ namespace AV.Framework.Application
             {
                 UnityEngine.Debug.Log($"Player moved to: {player.Position}, Killed piece: {killedPieceId}");
                 boardPresenter.UpdatePiecePosition(player.Id, player.Position);
+                playerMovedPublisher.Publish(new PlayerMovedEvent(player.Position));
 
                 if (board.Grid.TryGetCell(player.Position, out GridCell cell) && cell.CellType == CellType.Goal)
                 {
@@ -104,6 +114,12 @@ namespace AV.Framework.Application
             if (killedPieceId >= 0)
             {
                 boardPresenter.HidePiece(killedPieceId);
+                obstacleCapturedPublisher.Publish(new ObstacleCapturedEvent(killedPieceId));
+            }
+
+            if (gameFlow.State == GameFlowState.Playing && gameSession.RemainingMoves <= 0)
+            {
+                gameFlow.LoseGame();
             }
         }
 
@@ -133,6 +149,8 @@ namespace AV.Framework.Application
             {
                 boardPresenter.RenderPiece(restoredPiece);
             }
+
+            moveUndonePublisher.Publish(new MoveUndoneEvent());
         }
 
         private void OnPowerUpModeStarted(PowerUpModeStartedEvent powerUpModeStartedEvent)

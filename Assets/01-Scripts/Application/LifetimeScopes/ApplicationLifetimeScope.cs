@@ -11,6 +11,8 @@ public sealed class ApplicationLifetimeScope : LifetimeScope
     [SerializeField] private BoardData boardData;
     [SerializeField] private BoardVisualConfig boardVisualConfig;
     [SerializeField] private Camera gameCamera;
+    [SerializeField] private GameAudioConfig gameAudioConfig;
+    [SerializeField] private AudioSource gameAudioSource;
 
     protected override void Configure(IContainerBuilder builder)
     {
@@ -18,6 +20,8 @@ public sealed class ApplicationLifetimeScope : LifetimeScope
         builder.RegisterInstance(boardData);
         builder.RegisterInstance(boardVisualConfig);
         builder.RegisterInstance(gameCamera);
+        builder.RegisterInstance(gameAudioConfig);
+        builder.RegisterInstance(gameAudioSource);
 
         if (environmentSettings != null && environmentSettings.SRDebuggerEnabled)
         {

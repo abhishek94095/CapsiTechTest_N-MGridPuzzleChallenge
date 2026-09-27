@@ -16,6 +16,8 @@ namespace AV.Framework.Application
         private readonly ISubscriber<BoardTargetSelectedEvent> targetSubscriber;
         private readonly IPublisher<PowerUpModeStartedEvent> modeStartedPublisher;
         private readonly IPublisher<PowerUpModeEndedEvent> modeEndedPublisher;
+        private readonly IPublisher<PowerUpUsedEvent> powerUpUsedPublisher;
+        private readonly IPublisher<PowerUpCancelledEvent> powerUpCancelledPublisher;
         private IDisposable targetSubscription;
 
         public PowerUpController(
@@ -24,7 +26,9 @@ namespace AV.Framework.Application
             GameFlow gameFlow,
             ISubscriber<BoardTargetSelectedEvent> targetSubscriber,
             IPublisher<PowerUpModeStartedEvent> modeStartedPublisher,
-            IPublisher<PowerUpModeEndedEvent> modeEndedPublisher)
+            IPublisher<PowerUpModeEndedEvent> modeEndedPublisher,
+            IPublisher<PowerUpUsedEvent> powerUpUsedPublisher,
+            IPublisher<PowerUpCancelledEvent> powerUpCancelledPublisher)
         {
             this.boardInitializer = boardInitializer ?? throw new ArgumentNullException(nameof(boardInitializer));
             this.boardPresenter = boardPresenter ?? throw new ArgumentNullException(nameof(boardPresenter));
@@ -32,6 +36,8 @@ namespace AV.Framework.Application
             this.targetSubscriber = targetSubscriber ?? throw new ArgumentNullException(nameof(targetSubscriber));
             this.modeStartedPublisher = modeStartedPublisher ?? throw new ArgumentNullException(nameof(modeStartedPublisher));
             this.modeEndedPublisher = modeEndedPublisher ?? throw new ArgumentNullException(nameof(modeEndedPublisher));
+            this.powerUpUsedPublisher = powerUpUsedPublisher ?? throw new ArgumentNullException(nameof(powerUpUsedPublisher));
+            this.powerUpCancelledPublisher = powerUpCancelledPublisher ?? throw new ArgumentNullException(nameof(powerUpCancelledPublisher));
         }
 
         public int HammerCharges { get; private set; } = 3;
@@ -64,10 +70,20 @@ namespace AV.Framework.Application
 
         public void CancelPowerUp()
         {
+            EndPowerUpMode(true);
+        }
+
+        private void EndPowerUpMode(bool wasCancelled)
+        {
             if (!IsPowerUpActive) return;
 
             PowerUpType powerUpType = ActivePowerUp.Value;
             ActivePowerUp = null;
+            if (wasCancelled)
+            {
+                powerUpCancelledPublisher.Publish(new PowerUpCancelledEvent(powerUpType));
+            }
+
             modeEndedPublisher.Publish(new PowerUpModeEndedEvent(powerUpType));
         }
 
@@ -107,8 +123,9 @@ namespace AV.Framework.Application
                 return;
             }
 
+            powerUpUsedPublisher.Publish(new PowerUpUsedEvent(powerUpType, target.Position));
             ConsumeCharge(powerUpType);
-            CancelPowerUp();
+            EndPowerUpMode(false);
         }
 
         private bool TryApplyPowerUp(Board board, GridPosition position, PowerUpType powerUpType)
@@ -131,7 +148,7 @@ namespace AV.Framework.Application
         {
             if (state == GameFlowState.Won || state == GameFlowState.Lost)
             {
-                CancelPowerUp();
+                EndPowerUpMode(false);
             }
         }
 
