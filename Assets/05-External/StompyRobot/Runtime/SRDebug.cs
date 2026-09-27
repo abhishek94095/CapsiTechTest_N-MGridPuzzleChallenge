@@ -18,5 +18,10 @@ public static class SRDebug
 
         // Load the debug service
         SRServiceManager.GetService<IDebugService>();
+        AppAnalyticsController.Initialize();
+    }
+
+    public static void InitializeAnalytics()
+    {
     }
 }

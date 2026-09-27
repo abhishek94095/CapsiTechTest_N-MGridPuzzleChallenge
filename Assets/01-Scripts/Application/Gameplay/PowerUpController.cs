@@ -45,6 +45,13 @@ namespace AV.Framework.Application
         public PowerUpType? ActivePowerUp { get; private set; }
         public bool IsPowerUpActive => ActivePowerUp.HasValue;
 
+        public void ResetForLevel()
+        {
+            EndPowerUpMode(false);
+            HammerCharges = 3;
+            RocketCharges = 3;
+        }
+
         public void Start()
         {
             targetSubscription = targetSubscriber.Subscribe(OnTargetSelected);
@@ -146,7 +153,7 @@ namespace AV.Framework.Application
 
         private void OnGameFlowStateChanged(GameFlowState state)
         {
-            if (state == GameFlowState.Won || state == GameFlowState.Lost)
+            if (state != GameFlowState.Playing)
             {
                 EndPowerUpMode(false);
             }

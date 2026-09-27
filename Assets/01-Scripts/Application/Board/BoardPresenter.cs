@@ -160,7 +160,7 @@ namespace AV.Framework.Application
             return new Vector3(x, y, 0f);
         }
 
-        private void Clear()
+        public void Clear()
         {
             if (boardRoot != null) UnityEngine.Object.Destroy(boardRoot.gameObject);
 

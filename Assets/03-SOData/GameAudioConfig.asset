@@ -14,22 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Application::AV.Framework.GameData.GameAudioConfig
   audioEntries:
   - audioType: 0
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: 14185266d39e24b47bbb2d446c08246b, type: 3}
   - audioType: 1
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: f98fc043348becb42bcc7b65c2b28167, type: 3}
   - audioType: 2
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: 7efd07e5bc3643e41958d008e274ad73, type: 3}
   - audioType: 3
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: ff8c0f7489295d54d87a58b5fe80700c, type: 3}
   - audioType: 4
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: 60f1e6af0e088d3459220c5f866604de, type: 3}
   - audioType: 5
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: a10b3bab328d7444496822a72c9b7999, type: 3}
   - audioType: 6
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: 09acf6cd28e8ffb47a5f274f282642eb, type: 3}
   - audioType: 7
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: 8a5cfba1c53d1584aa219b9619d92870, type: 3}
   - audioType: 8
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: 7507e64b2e69eac4db3574abed57c04b, type: 3}
   - audioType: 9
-    audioClip: {fileID: 0}
+    audioClip: {fileID: 8300000, guid: ccdf6f27704fc304cb0262f39903157a, type: 3}

@@ -8,22 +8,22 @@ namespace AV.Framework.Core.StateMachine
 {
     public sealed class GameStateMachine : IGameStateMachine
     {
-        private readonly Dictionary<Type, IGameState> _states;
-        private readonly ILogger _logger;
+        private readonly Dictionary<Type, IGameState> states;
+        private readonly ILogger logger;
 
         public IGameState CurrentState { get; private set; }
 
         public GameStateMachine(IEnumerable<IGameState> states, ILogger logger)
         {
-            _logger = logger;
-            _states = states.ToDictionary(state => state.GetType(), state => state);
+            this.logger = logger;
+            this.states = states.ToDictionary(state => state.GetType(), state => state);
         }
 
         public async Task ChangeStateAsync<TState>() where TState : class, IGameState
         {
-            if (!_states.TryGetValue(typeof(TState), out IGameState nextState))
+            if (!states.TryGetValue(typeof(TState), out IGameState nextState))
             {
-                _logger.LogError($"State '{typeof(TState).Name}' is not registered.");
+                logger.LogError($"State '{typeof(TState).Name}' is not registered.");
                 return;
             }
 
@@ -44,7 +44,7 @@ namespace AV.Framework.Core.StateMachine
             }
             catch (Exception exception)
             {
-                _logger.LogError($"Exception while transitioning to '{typeof(TState).Name}'.\n{exception}");
+                logger.LogError($"Exception while transitioning to '{typeof(TState).Name}'.\n{exception}");
             }
         }
     }

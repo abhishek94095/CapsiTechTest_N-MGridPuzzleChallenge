@@ -15,6 +15,8 @@ namespace AV.Framework.Application
         public CoreBoard Create(BoardData boardData)
         {
             if (boardData == null) throw new ArgumentNullException(nameof(boardData));
+            if (boardData.Width <= 0) throw new ArgumentOutOfRangeException(nameof(boardData), "Board width must be greater than zero.");
+            if (boardData.Height <= 0) throw new ArgumentOutOfRangeException(nameof(boardData), "Board height must be greater than zero.");
             if (boardData.Cells == null) throw new ArgumentException("Board cells are not configured.", nameof(boardData));
             if (boardData.Cells.Length != boardData.Width * boardData.Height) throw new ArgumentException("Board cell count does not match board dimensions.", nameof(boardData));
 
@@ -22,10 +24,14 @@ namespace AV.Framework.Application
             GridCell[] cells = CreateCells(boardData.Cells, boardData.Width, boardData.Height);
             List<Piece> pieces = new List<Piece>();
             HashSet<int> pieceIds = new HashSet<int> { PlayerPieceId };
+            int goalCount = 0;
 
-            int configuredPieceCount = boardData.Pieces == null ? 0 : boardData.Pieces.Length;
-            int maxPieceCount = Math.Min(boardData.Width, boardData.Height) - 1;
-            if (configuredPieceCount + 1 > maxPieceCount) throw new ArgumentException("Board contains too many pieces for its dimensions.", nameof(boardData));
+            for (int index = 0; index < boardData.Cells.Length; index++)
+            {
+                if (boardData.Cells[index] == CellType.Goal) goalCount++;
+            }
+
+            if (goalCount != 1) throw new ArgumentException("Board must contain exactly one Goal cell.", nameof(boardData));
 
             pieces.Add(new Piece(PlayerPieceId, PieceType.Player, startPosition, true, Array.Empty<GridPosition>()));
             cells[startPosition.Y * boardData.Width + startPosition.X] = cells[startPosition.Y * boardData.Width + startPosition.X].WithOccupant(CellOccupant.Player);
@@ -45,6 +51,34 @@ namespace AV.Framework.Application
                     if (cells[cellIndex].IsOccupied) throw new ArgumentException($"Cell {position} already contains a piece.", nameof(boardData));
 
                     GridPosition[] path = ConvertPath(pieceData.Path);
+                    if (pieceData.Type == PieceType.Obstacle && path.Length > 0)
+                    {
+                        if (path.Length < 2) throw new ArgumentException($"Moving obstacle {pieceData.Id} must contain at least two path positions.", nameof(boardData));
+
+                        bool containsStartPosition = false;
+                        for (int pathIndex = 0; pathIndex < path.Length; pathIndex++)
+                        {
+                            GridPosition pathPosition = path[pathIndex];
+                            if (!IsValidPosition(pathPosition, boardData.Width, boardData.Height))
+                            {
+                                throw new ArgumentException($"Path position {pathPosition} for piece {pieceData.Id} is outside the board.", nameof(boardData));
+                            }
+
+                            int pathCellIndex = pathPosition.Y * boardData.Width + pathPosition.X;
+                            if (cells[pathCellIndex].IsBlocked)
+                            {
+                                throw new ArgumentException($"Path position {pathPosition} for piece {pieceData.Id} is a stone cell.", nameof(boardData));
+                            }
+
+                            if (pathPosition == position) containsStartPosition = true;
+                        }
+
+                        if (!containsStartPosition)
+                        {
+                            throw new ArgumentException($"Path for moving obstacle {pieceData.Id} must contain its start position.", nameof(boardData));
+                        }
+                    }
+
                     pieces.Add(new Piece(pieceData.Id, pieceData.Type, position, true, path));
                     cells[cellIndex] = cells[cellIndex].WithOccupant(CellOccupant.Obstacle);
                 }

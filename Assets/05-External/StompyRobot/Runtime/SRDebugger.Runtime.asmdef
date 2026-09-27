@@ -1,7 +1,10 @@
 {
     "name": "SRDebugger.Runtime",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Unity.Services.Core",
+        "Unity.Services.Analytics"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

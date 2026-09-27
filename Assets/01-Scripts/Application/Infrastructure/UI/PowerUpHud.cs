@@ -4,6 +4,7 @@ using MessagePipe;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 namespace AV.Framework.Application
 {
@@ -16,15 +17,19 @@ namespace AV.Framework.Application
         [SerializeField] private TMP_Text rocketChargeText;
 
         private PowerUpController powerUpController;
+        private GameFlow gameFlow;
         private IDisposable powerUpStartedSubscription;
         private IDisposable powerUpEndedSubscription;
 
+        [Inject]
         public void Initialize(
             PowerUpController powerUpController,
             MessagePipe.ISubscriber<PowerUpModeStartedEvent> powerUpStartedSubscriber,
-            MessagePipe.ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber)
+            MessagePipe.ISubscriber<PowerUpModeEndedEvent> powerUpEndedSubscriber,
+            GameFlow gameFlow)
         {
             this.powerUpController = powerUpController ?? throw new ArgumentNullException(nameof(powerUpController));
+            this.gameFlow = gameFlow ?? throw new ArgumentNullException(nameof(gameFlow));
             if (hammerButton == null) throw new InvalidOperationException("Hammer Button is not assigned.");
             if (rocketButton == null) throw new InvalidOperationException("Rocket Button is not assigned.");
             if (cancelButton == null) throw new InvalidOperationException("Cancel Button is not assigned.");
@@ -36,6 +41,7 @@ namespace AV.Framework.Application
             cancelButton.onClick.AddListener(OnCancelClicked);
             powerUpStartedSubscription = powerUpStartedSubscriber.Subscribe(OnPowerUpModeStarted);
             powerUpEndedSubscription = powerUpEndedSubscriber.Subscribe(OnPowerUpModeEnded);
+            gameFlow.StateChanged += OnGameFlowStateChanged;
             Refresh();
         }
 
@@ -53,6 +59,7 @@ namespace AV.Framework.Application
             powerUpEndedSubscription?.Dispose();
             powerUpStartedSubscription = null;
             powerUpEndedSubscription = null;
+            if (gameFlow != null) gameFlow.StateChanged -= OnGameFlowStateChanged;
         }
 
         private void OnHammerClicked()
@@ -83,17 +90,26 @@ namespace AV.Framework.Application
             Refresh();
         }
 
+        private void OnGameFlowStateChanged(GameFlowState state)
+        {
+            Refresh();
+        }
+
         private void Refresh()
         {
             if (powerUpController == null) return;
 
-            hammerChargeText.text = powerUpController.HammerCharges.ToString();
-            rocketChargeText.text = powerUpController.RocketCharges.ToString();
+            if (hammerChargeText != null) hammerChargeText.text = powerUpController.HammerCharges.ToString();
+            if (rocketChargeText != null) rocketChargeText.text = powerUpController.RocketCharges.ToString();
 
             bool isPowerUpActive = powerUpController.IsPowerUpActive;
-            hammerButton.interactable = powerUpController.HammerCharges > 0 && !isPowerUpActive;
-            rocketButton.interactable = powerUpController.RocketCharges > 0 && !isPowerUpActive;
-            cancelButton.gameObject.SetActive(isPowerUpActive);
+            bool isPlaying = gameFlow != null && gameFlow.State == GameFlowState.Playing;
+            bool canActivate = isPlaying && !isPowerUpActive;
+
+            if (hammerButton != null) hammerButton.interactable = canActivate && powerUpController.HammerCharges > 0;
+            if (rocketButton != null) rocketButton.interactable = canActivate && powerUpController.RocketCharges > 0;
+            if (cancelButton != null) cancelButton.gameObject.SetActive(isPlaying && isPowerUpActive);
+            gameObject.SetActive(isPlaying);
         }
     }
 }

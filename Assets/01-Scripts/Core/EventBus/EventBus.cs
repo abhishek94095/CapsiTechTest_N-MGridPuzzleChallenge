@@ -7,23 +7,23 @@ namespace AV.Framework.Core.EventBus
 {
     public sealed class EventBus : IEventBus
     {
-        private readonly Dictionary<Type, List<Delegate>> _syncSubscribers = new();
-        private readonly Dictionary<Type, List<Delegate>> _asyncSubscribers = new();
-        private readonly ILogger _logger;
+        private readonly Dictionary<Type, List<Delegate>> syncSubscribers = new();
+        private readonly Dictionary<Type, List<Delegate>> asyncSubscribers = new();
+        private readonly ILogger logger;
 
         public EventBus(ILogger logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
 
         public IDisposable Subscribe<T>(Action<T> callback)
         {
             Type eventType = typeof(T);
 
-            if (!_syncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
+            if (!syncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
             {
                 subscribers = new List<Delegate>();
-                _syncSubscribers[eventType] = subscribers;
+                syncSubscribers[eventType] = subscribers;
             }
 
             if (!subscribers.Contains(callback))
@@ -38,7 +38,7 @@ namespace AV.Framework.Core.EventBus
         {
             Type eventType = typeof(T);
 
-            if (!_syncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
+            if (!syncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
             {
                 return;
             }
@@ -47,7 +47,7 @@ namespace AV.Framework.Core.EventBus
 
             if (subscribers.Count == 0)
             {
-                _syncSubscribers.Remove(eventType);
+                syncSubscribers.Remove(eventType);
             }
         }
 
@@ -55,7 +55,7 @@ namespace AV.Framework.Core.EventBus
         {
             Type eventType = typeof(T);
 
-            if (!_syncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
+            if (!syncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
             {
                 return;
             }
@@ -70,7 +70,7 @@ namespace AV.Framework.Core.EventBus
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError($"Exception while publishing event '{eventType.Name}'.\n{exception}");
+                    logger.LogError($"Exception while publishing event '{eventType.Name}'.\n{exception}");
                 }
             }
         }
@@ -79,10 +79,10 @@ namespace AV.Framework.Core.EventBus
         {
             Type eventType = typeof(T);
 
-            if (!_asyncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
+            if (!asyncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
             {
                 subscribers = new List<Delegate>();
-                _asyncSubscribers[eventType] = subscribers;
+                asyncSubscribers[eventType] = subscribers;
             }
 
             if (!subscribers.Contains(callback))
@@ -97,7 +97,7 @@ namespace AV.Framework.Core.EventBus
         {
             Type eventType = typeof(T);
 
-            if (!_asyncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
+            if (!asyncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
             {
                 return;
             }
@@ -106,7 +106,7 @@ namespace AV.Framework.Core.EventBus
 
             if (subscribers.Count == 0)
             {
-                _asyncSubscribers.Remove(eventType);
+                asyncSubscribers.Remove(eventType);
             }
         }
 
@@ -114,7 +114,7 @@ namespace AV.Framework.Core.EventBus
         {
             Type eventType = typeof(T);
 
-            if (!_asyncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
+            if (!asyncSubscribers.TryGetValue(eventType, out List<Delegate> subscribers))
             {
                 return;
             }
@@ -129,7 +129,7 @@ namespace AV.Framework.Core.EventBus
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError($"Exception while publishing async event '{eventType.Name}'.\n{exception}");
+                    logger.LogError($"Exception while publishing async event '{eventType.Name}'.\n{exception}");
                 }
             }
         }

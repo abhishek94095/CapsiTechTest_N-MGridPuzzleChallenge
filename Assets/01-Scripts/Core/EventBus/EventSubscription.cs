@@ -4,17 +4,17 @@ namespace AV.Framework.Core.EventBus
 {
     public sealed class EventSubscription : IDisposable
     {
-        private Action _disposeAction;
+        private Action disposeAction;
 
         public EventSubscription(Action disposeAction)
         {
-            _disposeAction = disposeAction;
+            this.disposeAction = disposeAction;
         }
 
         public void Dispose()
         {
-            _disposeAction?.Invoke();
-            _disposeAction = null;
+            disposeAction?.Invoke();
+            disposeAction = null;
         }
     }
 }

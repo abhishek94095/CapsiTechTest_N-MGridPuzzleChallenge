@@ -1,9 +1,6 @@
 namespace AV.Framework.Application.Installers
 {
-    using AV.Framework.Application;
     using AV.Framework.Application.Audio;
-    using AV.Framework.Core.Board;
-    using AV.Framework.Core.Events;
     using MessagePipe;
     using VContainer;
     using VContainer.Unity;
@@ -17,30 +14,22 @@ namespace AV.Framework.Application.Installers
             builder.Register<MoveHistory>(Lifetime.Singleton);
             builder.Register<GameFlow>(Lifetime.Singleton);
             builder.Register<GameSession>(Lifetime.Singleton);
-            builder.RegisterComponentInHierarchy<PowerUpHud>();
-            builder.RegisterComponentInHierarchy<GameHud>();
+            builder.Register<BoardInitializer>(Lifetime.Singleton);
+            builder.Register<LevelController>(Lifetime.Singleton);
+
             builder.RegisterEntryPoint<SwipeInputController>();
-            builder.RegisterEntryPoint<BoardInitializer>().AsSelf();
             builder.RegisterEntryPoint<PlayerMovement>();
-            builder.RegisterEntryPoint<MovingPieceController>();
+            builder.RegisterEntryPoint<MovingPieceController>().AsSelf();
             builder.RegisterEntryPoint<PowerUpController>().AsSelf();
-            builder.RegisterEntryPoint<GameAudioController>();
             builder.RegisterEntryPoint<GameFlowEntryPoint>();
+            builder.RegisterEntryPoint<GameAudioController>();
+
+            builder.RegisterComponentInHierarchy<MainMenuUI>();
+            builder.RegisterComponentInHierarchy<GameplayHud>();
+            builder.RegisterComponentInHierarchy<GameResultUI>();
+            builder.RegisterComponentInHierarchy<PowerUpHud>();
+
             builder.RegisterMessagePipe();
-
-            builder.RegisterBuildCallback(container =>
-            {
-                PowerUpHud powerUpHud = container.Resolve<PowerUpHud>();
-                powerUpHud.Initialize(
-                    container.Resolve<PowerUpController>(),
-                    container.Resolve<ISubscriber<PowerUpModeStartedEvent>>(),
-                    container.Resolve<ISubscriber<PowerUpModeEndedEvent>>());
-
-                GameHud gameHud = container.Resolve<GameHud>();
-                gameHud.Initialize(
-                    container.Resolve<GameSession>(),
-                    container.Resolve<IPublisher<UndoRequestedEvent>>());
-            });
         }
     }
 }

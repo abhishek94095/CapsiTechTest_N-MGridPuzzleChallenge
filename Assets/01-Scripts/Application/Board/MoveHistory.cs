@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AV.Framework.Core.Board;
 
@@ -8,10 +9,12 @@ namespace AV.Framework.Application
         private readonly Stack<Move> moves = new Stack<Move>();
 
         public int Count => moves.Count;
+        public event Action<int> CountChanged;
 
         public void Add(Move move)
         {
             moves.Push(move);
+            CountChanged?.Invoke(moves.Count);
         }
 
         public bool TryRemoveLast(out Move move)
@@ -23,12 +26,16 @@ namespace AV.Framework.Application
             }
 
             move = moves.Pop();
+            CountChanged?.Invoke(moves.Count);
             return true;
         }
 
         public void Clear()
         {
+            if (moves.Count == 0) return;
+
             moves.Clear();
+            CountChanged?.Invoke(0);
         }
     }
 }

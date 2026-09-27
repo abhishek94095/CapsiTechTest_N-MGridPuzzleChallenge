@@ -26,6 +26,7 @@ namespace AV.Framework.Application
         private IDisposable powerUpEndedSubscription;
         private bool isRunning;
         private bool isPowerUpModeActive;
+        private int levelGeneration;
 
         public MovingPieceController(
             BoardInitializer boardInitializer,
@@ -47,8 +48,15 @@ namespace AV.Framework.Application
         {
             powerUpStartedSubscription = powerUpStartedSubscriber.Subscribe(OnPowerUpModeStarted);
             powerUpEndedSubscription = powerUpEndedSubscriber.Subscribe(OnPowerUpModeEnded);
+        }
 
+        public void StartLevel()
+        {
+            levelGeneration++;
+            int currentGeneration = levelGeneration;
             isRunning = true;
+            movementTasks.Clear();
+
             Board board = boardInitializer.CurrentBoard;
             if (board == null) return;
 
@@ -57,19 +65,25 @@ namespace AV.Framework.Application
                 Piece piece = board.Pieces[index];
                 if (!piece.IsActive || piece.Type != PieceType.Obstacle || piece.Path == null || piece.Path.Length < 2) continue;
 
-                movementTasks.Add(MovePieceAsync(piece.Id));
+                movementTasks.Add(MovePieceAsync(piece.Id, currentGeneration));
             }
+        }
+
+        public void StopLevel()
+        {
+            levelGeneration++;
+            isRunning = false;
+            movementTasks.Clear();
         }
 
         public void Dispose()
         {
-            isRunning = false;
-            movementTasks.Clear();
+            StopLevel();
             powerUpStartedSubscription?.Dispose();
             powerUpEndedSubscription?.Dispose();
         }
 
-        private async UniTask MovePieceAsync(int pieceId)
+        private async UniTask MovePieceAsync(int pieceId, int currentGeneration)
         {
             Board board = boardInitializer.CurrentBoard;
             if (board == null) return;
@@ -80,7 +94,7 @@ namespace AV.Framework.Application
             while (isRunning)
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(MoveInterval));
-                if (!isRunning) return;
+                if (!isRunning || currentGeneration != levelGeneration) return;
                 if (gameFlow.State != GameFlowState.Playing) break;
                 if (isPowerUpModeActive) continue;
 

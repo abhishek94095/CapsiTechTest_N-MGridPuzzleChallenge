@@ -132,8 +132,10 @@ namespace AV.Framework.Application.Audio
 
         private void Play(GameAudioType audioType)
         {
-            if (!audioConfig.TryGetClip(audioType, out AudioClip clip)) return;
-            audioSource.PlayOneShot(clip);
+            if (!audioConfig.TryGetClip(audioType, out AudioClip audioClip)) return;
+            if (audioClip == null) return;
+
+            audioSource.PlayOneShot(audioClip);
         }
     }
 }
